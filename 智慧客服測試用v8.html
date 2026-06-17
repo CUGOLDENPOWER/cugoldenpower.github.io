@@ -1,0 +1,613 @@
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>金高電 智慧客服</title>
+
+<style>
+#portal-wrapper { 
+  font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+}
+
+#chat-toggle { 
+  position: fixed; right: 25px; bottom: 25px; width: 64px; height: 64px; border-radius: 50%;
+  border: none; background: #2d8a43; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 999999;
+  box-shadow: 0 4px 20px rgba(45, 138, 67, 0.3); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+#chat-toggle:hover { transform: scale(1.1); background: #247036; }
+
+/* --- 響應式對話框容器 --- */
+.portal-box { 
+  position: fixed; display: none; z-index: 999998; background: white; 
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15); flex-direction: column; overflow: hidden; 
+  border: 1px solid #e2e8f0; animation: slideUp 0.3s ease-out; 
+}
+
+/* 電腦版 */
+@media (min-width: 768px) {
+  .portal-box { right: 25px; bottom: 100px; width: 400px; height: 600px; max-width: 90vw; max-height: 80vh; border-radius: 16px; }
+}
+
+/* 手機版滿版 */
+@media (max-width: 767px) {
+  .portal-box { left: 0; right: 0; top: 0; bottom: 0; width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; border: none; }
+  .user-input-field { font-size: 16px !important; }
+  .chat-msg { max-width: 90% !important; }
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Header 標頭區塊 --- */
+.portal-header { background: linear-gradient(135deg, #2d8a43 0%, #1e3a8a 100%); color: white; padding: 18px 20px; font-weight: 600; font-size: 17px; display: flex; align-items: center; }
+.back-btn { background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer; font-size: 22px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; transition: 0.2s; }
+.back-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* 右上角關閉按鈕 ✕ */
+.close-window-btn { background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer; font-size: 16px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: sans-serif; font-weight: bold; margin-left: auto; }
+.close-window-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+
+/* 全螢幕按鈕 (跟隨在標題旁邊) */
+.fullscreen-btn { color:#fff; text-decoration:none; font-size:20px; transition:0.2s; display: flex; align-items: center; }
+.fullscreen-btn:hover { transform:scale(1.2); opacity:0.8; }
+
+/* --- 首頁選單內容 --- */
+.menu-body { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 16px; background: #ffffff; box-sizing: border-box; overflow-y: auto; }
+.brand-welcome { text-align: center; margin-bottom: 10px; }
+.brand-welcome h3 { color: #1e293b; margin: 0 0 8px 0; font-size: 20px; }
+.brand-welcome p { color: #64748b; margin: 0; font-size: 15px; }
+
+.menu-btn { width: 100%; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; text-align: left; background: #f8fafc; gap: 15px; }
+.menu-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+.btn-icon { font-size: 24px; background: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.btn-text { display: flex; flex-direction: column; }
+.btn-text strong { font-size: 16px; color: #1e293b; display: block; margin-bottom: 2px; }
+.btn-text span { font-size: 13px; color: #64748b; }
+
+.btn-green:hover { border-left: 4px solid #2d8a43; }
+.btn-blue:hover { border-left: 4px solid #1e3a8a; }
+
+/* --- 對話區域 --- */
+.chat-messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: #f8fafc; -webkit-overflow-scrolling: touch; }
+.chat-msg { padding: 12px 16px; border-radius: 14px; max-width: 85%; word-break: break-all; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.user-msg { background: #2d8a43; color: white; align-self: flex-end; border-bottom-right-radius: 2px; box-shadow: 0 2px 5px rgba(45, 138, 67, 0.2); }
+.bot-msg { background: white; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+
+/* 打字動畫 */
+.typing-indicator { display: flex; align-items: center; gap: 4px; height: 20px; }
+.typing-indicator span { width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, #2d8a43 0%, #1e3a8a 100%); display: inline-block; animation: bounce 1.2s infinite ease-in-out both; }
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; scale: 0.8; } 40% { transform: translateY(-6px); opacity: 1; scale: 1.1; } }
+
+/* --- 輸入區域與隱私政策文字 --- */
+.chat-input-area { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #e2e8f0; padding: 15px; background: white; }
+.input-row { display: flex; gap: 10px; width: 100%; }
+.user-input-field { flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 15px; outline: none; font-size: 14px; transition: 0.2s; background: #f8fafc; }
+.user-input-field:focus { border-color: #2d8a43; background: white; box-shadow: 0 0 0 3px rgba(45, 138, 67, 0.1); }
+.input-row button { background: #2d8a43; color: white; border: none; padding: 0 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+.input-row button:hover { background: #247036; }
+
+.policy-link-container { text-align: center; }
+.policy-link-container a { font-size: 12px; color: #94a3b8; text-decoration: underline; cursor: pointer; transition: 0.2s; }
+.policy-link-container a:hover { color: #64748b; }
+
+/* --- 滿意度與推薦按鈕 --- */
+.rec-btn { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 8px; transition: 0.2s; font-weight: 500; }
+.rec-btn:hover { background: #2d8a43; color: white; }
+.feedback-area { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: #64748b; padding-left: 5px; }
+.feedback-btn-yes { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
+.feedback-btn-yes:hover { background: #2d8a43; color: white; }
+.feedback-btn-no { background: white; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
+.feedback-btn-no:hover { background: #64748b; color: white; }
+
+/* --- 隱私權 Modal --- */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-content { background: white; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.3s ease-out; }
+.modal-header { background: linear-gradient(135deg, #2d8a43 0%, #1e3a8a 100%); color: white; padding: 16px 20px; font-weight: 600; font-size: 17px; display: flex; align-items: center; justify-content: space-between; }
+.close-btn { background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer; font-size: 14px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.close-btn:hover { background: rgba(255,255,255,0.25); }
+.modal-body { padding: 24px; overflow-y: auto; font-size: 14px; line-height: 1.8; color: #334155; }
+
+/* =========================================
+   法規智庫 Markdown
+   ========================================= */
+.markdown-content {
+  white-space: normal !important;  /* 覆蓋 pre-wrap，讓 HTML 元素正常排版 */
+  word-break: break-word;
+}
+
+/* 表格樣式 */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0;
+  font-size: 12.5px;
+  display: block;         /* 讓寬表格可以橫向捲動 */
+  overflow-x: auto;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.markdown-content thead {
+  background: linear-gradient(135deg, rgba(45,138,67,0.12) 0%, rgba(30,58,138,0.12) 100%);
+}
+.markdown-content th {
+  border: 1px solid #94a3b8;
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+}
+.markdown-content td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  color: #334155;
+  vertical-align: top;
+}
+.markdown-content tr:nth-child(even) td {
+  background-color: #f8fafc;
+}
+.markdown-content tr:hover td {
+  background-color: #f1f5f9;
+  transition: background-color 0.15s;
+}
+
+/* 圖片樣式 */
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 10px auto;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  border: 1px solid #e2e8f0;
+}
+</style>
+</head>
+<body>
+
+<div id="portal-wrapper">
+<button id="chat-toggle" onclick="togglePortal()">
+<svg fill="none" style="width: 30px; height: 30px;" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+
+<div class="portal-box" id="portal-menu">
+    <div class="portal-header">
+        <img alt="CU GOLDEN" src="https://www.gigataiwan.com.tw/upload/news_b/twL_news_21H16_PzthiDJRKD.png" style="height: 24px; margin-right: 8px; filter: brightness(0) invert(1);">
+        <span style="flex: 1;">金高電 智慧客服</span>
+        <button class="close-window-btn" onclick="togglePortal()">✕</button>
+    </div>
+    <div class="menu-body">
+        <div class="brand-welcome">
+            <h3>歡迎使用金高電智慧客服</h3>
+            <p>請選擇您需要的服務：</p>
+        </div>
+        <button class="menu-btn btn-green" onclick="openWindow('faq')">
+            <span class="btn-icon">💡</span>
+            <div class="btn-text">
+                <strong>智慧客服</strong>
+                <span>產品諮詢與公司資訊</span>
+            </div>
+        </button>
+        <button class="menu-btn btn-blue" onclick="openWindow('dify')">
+            <span class="btn-icon">📚</span>
+            <div class="btn-text">
+                <strong>法規智庫</strong>
+                <span>給排水設備技術規範查詢</span>
+            </div>
+        </button>
+    </div>
+</div>
+
+<div class="portal-box" id="faq-window">
+    <div class="portal-header">
+        <button class="back-btn" onclick="backToMenu()">‹</button>
+        <span style="flex: 1; display: flex; align-items: center; gap: 8px;">
+            智慧客服
+
+            <!--
+            <a href="https://godflower123456-rgb.github.io/" target="_blank" class="fullscreen-btn" title="全螢幕開啟">⛶</a>
+         -->
+
+        </span>
+        <button class="close-window-btn" onclick="togglePortal()">✕</button>
+    </div>
+    <div class="chat-messages-area" id="faq-messages">
+        <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>有關公司跟產品的問題都可以向我提問！</div>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-row">
+            <input class="user-input-field" id="faq-input" onkeypress="handleKeyPress(event, 'faq')" placeholder="請輸入您的問題..." type="text"/>
+            <button onclick="sendMessage('faq')">發送</button>
+        </div>
+        <div class="policy-link-container">
+            <a href="#" onclick="openPolicyModal(); return false;">隱私政策</a>
+        </div>
+    </div>
+</div>
+
+<div class="portal-box" id="dify-window">
+    <div class="portal-header">
+        <button class="back-btn" onclick="backToMenu()">‹</button>
+        <span style="flex: 1; display: flex; align-items: center; gap: 8px;">
+            法規智庫
+
+            <!--
+            <a href="https://cugoldenpower.github.io/" target="_blank" class="fullscreen-btn" title="全螢幕開啟">⛶</a>
+         -->
+
+        </span>
+        <button class="close-window-btn" onclick="togglePortal()">✕</button>
+    </div>
+    <div class="chat-messages-area" id="dify-messages">
+        <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>請輸入有關「建築物給水排水設備設計技術規範」的問題：</div>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-row">
+            <input class="user-input-field" id="dify-input" onkeypress="handleKeyPress(event, 'dify')" placeholder="請輸入您的問題..." type="text"/>
+            <button onclick="sendMessage('dify')">發送</button>
+        </div>
+        <div class="policy-link-container">
+            <a href="#" onclick="openPolicyModal(); return false;">隱私政策</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="policy-modal" onclick="if(event.target===this) closePolicyModal()">
+<div class="modal-content">
+<div class="modal-header">
+<span>隱私權宣告及資訊安全政策</span>
+<button class="close-btn" onclick="closePolicyModal()">✕</button>
+</div>
+<div class="modal-body">
+                <h3 style="color:#2d8a43; margin-top:0;">1. 政策適用與資料概括蒐集</h3>
+                <p>本政策旨在說明金高電實業有限公司（下稱「本公司」）智慧客戶服務系統（下稱「本系統」）於提供服務時之資料處理原則。為維護系統運作、統計流量及提供對話連續性，本系統將於必要範圍內，自動蒐集不具備個人可識別性之匿名數據與對話紀錄。當您開始使用本系統之各項服務時，即視為您已充分閱讀並同意本政策之全部內容。</p>
+                <h3 style="color:#2d8a43;">2. 第三方技術與 AI 運算宣告</h3>
+                <p>本系統部分功能採用第三方人工智慧（AI）技術進行語意分析與回覆生成，您輸入之對話文字將傳輸至第三方平台進行運算處理。特此聲明，相關傳輸過程均採取去識別化技術處理，該第三方平台並無法據此識別、追蹤或還原您的真實個人身分。</p>
+                <h3 style="color:#2d8a43;">3. 資訊安全與責任限制</h3>
+                <p>本系統採用標準傳輸安全加密技術維護資訊安全。惟本平台屬開放式 AI 諮詢系統，用戶請勿主動輸入或提供任何敏感個人資料（包括但不限於：身分證字號、銀行帳號、個人密碼或詳細私密行蹤）。若因用戶主動揭露上述隱私資訊而導致任何風險或損害，應由用戶自行承擔，本公司概不負擔任何法律與損害賠償責任。</p>
+                 <h3 style="color:#2d8a43;">4. AI 生成內容之免責宣告</h3>
+                <p>本系統 AI 所生成之所有回覆（包含但不限於法規解讀、諮詢建議、文案生成等），均僅供參考，不具備法律實質效力，亦不代表本公司之正式承諾或立場。 正式業務執行與法規適用，仍應以政府官方公告之法規本文及本公司實際公告為準。若用戶因信賴本系統之 AI 回覆而導致任何直接或間接之損失，本公司特此聲明免除一切法律責任。</p>
+            </div>
+</div>
+</div>
+</div>
+
+<script>
+  const GAS_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzj7prm5_dCXlLjYukTn7R7IvTCfRHIqRi-iw7yyf23FHNqXZG2z5xC7uWkg8HxyMc6/exec';
+  
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"']/g, function (s) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
+    });
+  }
+
+  function togglePortal() {
+    const menu = document.getElementById('portal-menu');
+    const faqWin = document.getElementById('faq-window');
+    const difyWin = document.getElementById('dify-window');
+    const chatBubble = document.getElementById('chat-toggle');
+    
+    const isOpen = menu.style.display === 'flex' || faqWin.style.display === 'flex' || difyWin.style.display === 'flex';
+    
+    if (isOpen) {
+      menu.style.display = 'none';
+      faqWin.style.display = 'none';
+      difyWin.style.display = 'none';
+      
+      document.body.style.overflow = ''; 
+      chatBubble.style.display = 'flex';
+    } else {
+      menu.style.display = 'flex';
+      
+      document.body.style.overflow = 'hidden'; 
+      chatBubble.style.display = 'none';
+    }
+  }
+
+  function openWindow(type) {
+    document.getElementById('portal-menu').style.display = 'none';
+    document.getElementById(type + '-window').style.display = 'flex';
+  }
+
+  function backToMenu() {
+    document.getElementById('faq-window').style.display = 'none';
+    document.getElementById('dify-window').style.display = 'none';
+    document.getElementById('portal-menu').style.display = 'flex';
+  }
+
+  function openPolicyModal() {
+    document.getElementById('policy-modal').style.display = 'flex';
+  }
+
+  function closePolicyModal() {
+    document.getElementById('policy-modal').style.display = 'none';
+  }
+
+  function handleKeyPress(e, type) { 
+    if (e.key === 'Enter') sendMessage(type);
+  }
+
+  // =========================================
+  // Dify Markdown 解析器
+  // =========================================
+
+  /**
+   * 將 Dify 回傳的 Markdown 文字轉成 HTML
+   * 支援：表格、圖片、粗體、斜體
+   */
+  function parseDifyMarkdown(text) {
+    if (!text) return '';
+
+    const lines = text.split('\n');
+    const htmlParts = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // ── 表格偵測：行需同時以 | 開頭和結尾，且至少含 2 個 | ──
+      if (
+        trimmed.startsWith('|') &&
+        trimmed.endsWith('|') &&
+        (trimmed.match(/\|/g) || []).length >= 2
+      ) {
+        // 蒐集連續的表格行
+        const tableLines = [];
+        while (i < lines.length) {
+          const t = lines[i].trim();
+          if (t.startsWith('|') && t.endsWith('|')) {
+            tableLines.push(lines[i]);
+            i++;
+          } else {
+            break;
+          }
+        }
+        htmlParts.push({ type: 'block', content: buildMarkdownTable(tableLines) });
+
+      } else {
+        // 一般文字行（含圖片語法）
+        htmlParts.push({ type: 'inline', content: trimmed });
+        i++;
+      }
+    }
+
+    // 組合最終 HTML
+    let html = '';
+    for (let j = 0; j < htmlParts.length; j++) {
+      const part = htmlParts[j];
+      const prevIsBlock = j > 0 && htmlParts[j - 1].type === 'block';
+
+      if (part.type === 'block') {
+        html += part.content;
+      } else if (part.content === '') {
+        // 空行：若前一個不是 block 才加 <br>，避免表格後多餘空行
+        if (!prevIsBlock) html += '<br>';
+      } else {
+        html += processInlineMarkdown(part.content) + '<br>';
+      }
+    }
+
+    // 移除尾端多餘的 <br>
+    return html.replace(/(<br>\s*)+$/, '');
+  }
+
+  /**
+   * 將 Markdown 表格行陣列轉成 HTML <table>
+   */
+  function buildMarkdownTable(lines) {
+    // 判斷是否為分隔行，例如 | --- | :---: |
+    const isSeparator = line => /^[\|\s\-:|]+$/.test(line);
+    const dataLines = lines.filter(line => !isSeparator(line));
+    if (dataLines.length === 0) return '';
+
+    // 拆解一行儲存格
+    const parseRow = line => {
+      const cells = line.split('|');
+      // 去掉頭尾空字串（由開頭和結尾的 | 產生）
+      return cells.slice(1, cells.length - 1).map(c => c.trim());
+    };
+
+    let html = '<table>';
+
+    // 第一行作為表頭
+    html += '<thead><tr>';
+    parseRow(dataLines[0]).forEach(cell => {
+      html += `<th>${processInlineMarkdown(cell)}</th>`;
+    });
+    html += '</tr></thead>';
+
+    // 其餘行作為表身
+    if (dataLines.length > 1) {
+      html += '<tbody>';
+      for (let i = 1; i < dataLines.length; i++) {
+        html += '<tr>';
+        parseRow(dataLines[i]).forEach(cell => {
+          html += `<td>${processInlineMarkdown(cell)}</td>`;
+        });
+        html += '</tr>';
+      }
+      html += '</tbody>';
+    }
+
+    html += '</table>';
+    return html;
+  }
+
+  /**
+   * 處理行內 Markdown：圖片、粗體、斜體
+   * 採「先萃取圖片 → 跳脫 HTML → 還原圖片 → 套用粗斜體」的安全順序
+   */
+  function processInlineMarkdown(text) {
+    if (!text) return '';
+
+    // Step 1：萃取圖片語法，暫以佔位符取代
+    const images = [];
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
+      const idx = images.length;
+      images.push(
+        `<img src="${url}" alt="${alt || '圖片'}" onerror="this.style.display='none'">`
+      );
+      return `\x00IMG${idx}\x00`;
+    });
+
+    // Step 2：跳脫 HTML 特殊字元（避免 XSS 或非預期標籤）
+    text = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Step 3：套用粗體 **text**
+    text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+
+    // Step 4：套用斜體 *text*（確保不與粗體衝突）
+    text = text.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+
+    // Step 5：還原圖片
+    images.forEach((imgHtml, idx) => {
+      text = text.replace(`\x00IMG${idx}\x00`, imgHtml);
+    });
+
+    return text;
+  }
+
+  // =========================================
+  // 主要發送訊息函式（已加入 Dify Markdown 渲染）
+  // =========================================
+  async function sendMessage(type, textFromBtn) {
+    const inputEl = document.getElementById(type + '-input');
+    const text = textFromBtn || inputEl.value.trim();
+    if (!text) return;
+
+    const msgContainerId = type + '-messages';
+    appendMessage(msgContainerId, escapeHtml(text), 'user-msg');
+    if (!textFromBtn) inputEl.value = '';
+
+    const typingIndicatorHTML = `
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    `;
+    const typingId = appendMessage(msgContainerId, typingIndicatorHTML, 'bot-msg');
+
+    let currentUserId = localStorage.getItem('dify_user_id');
+
+    let currentConversationId = localStorage.getItem('dify_conversation_id'); 
+    
+    if (!currentUserId) {
+      currentUserId = 'user-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      localStorage.setItem('dify_user_id', currentUserId);
+    }
+
+    try {
+      const response = await fetch(GAS_BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ 
+          type: type, 
+          message: text, 
+          userId: currentUserId, 
+          isButton: !!textFromBtn,
+          conversationId: currentConversationId
+        }),
+        redirect: 'follow'
+      });
+      const data = await response.json();
+      
+
+      if (data.conversationId) {
+        localStorage.setItem('dify_conversation_id', data.conversationId);
+      }
+      
+      const indicatorEl = document.getElementById(typingId);
+      if (indicatorEl) indicatorEl.remove();
+
+      // ── Dify 回應套用 Markdown 解析 ──
+      if (type === 'dify') {
+        // 法規智庫：將 Markdown 轉為有格線表格＋顯示圖片
+        appendMessage(msgContainerId, parseDifyMarkdown(data.reply), 'bot-msg markdown-content');
+      } else {
+        // 智慧客服 (FAQ)：維持原本 HTML 渲染方式
+        appendMessage(msgContainerId, data.reply, 'bot-msg');
+      }
+
+      if (data.imageUrl) {
+        const imgHTML = `<img src="${data.imageUrl}" style="max-width:100%; border-radius:12px; display:block; margin-top:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
+        appendMessage(msgContainerId, imgHTML, 'bot-msg');
+      }
+      
+      if (data.recommendations && data.recommendations.length > 0) {
+        const msgContainer = document.getElementById(msgContainerId);
+        const recArea = document.createElement('div');
+        recArea.className = 'recommendation-area';
+        recArea.style.cssText = 'display:flex; flex-direction:column; align-items:flex-start; margin-top:5px;';
+        
+        const tip = document.createElement('span');
+        tip.textContent = "💡 猜您想問：";
+        tip.style.cssText = "font-size:12px; color:#64748b; margin-bottom:4px; padding-left:5px;";
+        recArea.appendChild(tip);
+        data.recommendations.forEach(q => {
+          const btn = document.createElement('button');
+          btn.className = 'rec-btn';
+          btn.textContent = q;
+          btn.onclick = () => sendMessage(type, q);
+          recArea.appendChild(btn);
+        });
+        msgContainer.appendChild(recArea);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }
+
+      if (data.showFeedback && data.logRow) {
+        const msgContainer = document.getElementById(msgContainerId);
+        const feedbackDiv = document.createElement('div');
+        const feedbackId = 'feedback-' + data.logRow;
+        feedbackDiv.id = feedbackId;
+        feedbackDiv.className = 'feedback-area';
+        feedbackDiv.innerHTML = `
+          <span>您是否滿意本次回答：</span>
+          <button class="feedback-btn-yes" onclick="sendFeedback('${type}', ${data.logRow}, '滿意', '${feedbackId}')">滿意</button>
+          <button class="feedback-btn-no" onclick="sendFeedback('${type}', ${data.logRow}, '不滿意', '${feedbackId}')">不滿意</button>
+        `;
+        msgContainer.appendChild(feedbackDiv);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }
+    } catch (error) {
+      console.error(error);
+      const typingEl = document.getElementById(typingId);
+      if (typingEl) typingEl.textContent = '系統暫時忙碌中，請稍後再試。';
+    }
+  }
+
+  function appendMessage(containerId, text, className) {
+    const msgContainer = document.getElementById(containerId);
+    const msgDiv = document.createElement('div');
+    const id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+    msgDiv.id = id;
+    msgDiv.className = `chat-msg ${className}`;
+    msgDiv.innerHTML = text;
+    msgContainer.appendChild(msgDiv);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+    return id;
+  }
+
+  async function sendFeedback(type, logRow, feedbackValue, feedbackId) {
+    const container = document.getElementById(feedbackId);
+    if (!container) return;
+
+    container.innerHTML = `<span style="color: #64748b; font-style: italic;">💡 感謝您的回饋！(已選擇：${feedbackValue})</span>`;
+    try {
+      await fetch(GAS_BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'feedback', logRow: logRow, feedback: feedbackValue }),
+        redirect: 'follow'
+      });
+    } catch (error) {
+      console.error("提交滿意度回饋失敗:", error);
+    }
+  }
+</script>
+</body></html>
