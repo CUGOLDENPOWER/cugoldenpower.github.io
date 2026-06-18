@@ -247,7 +247,11 @@
         <button class="close-window-btn" onclick="togglePortal()">✕</button>
     </div>
     <div class="chat-messages-area" id="dify-messages">
-        <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>請輸入有關「建築物給水排水設備設計技術規範」的問題：</div>
+<div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>請輸入有關「建築物給水排水設備設計技術規範」的問題：<br/><br/>您可能想問：<br/>
+<a href="#" onclick="sendMessage('dify', '我想知道總存水彎設置應符合的規定'); return false;">
+1. 採用總存水彎是否有條件</a>
+<a href="#" onclick="sendMessage('dify', '我想知道得不設立通氣管的條件'); return false;">
+2. 什麼條件下可以不設立通氣管</a><br/>
     </div>
     <div class="chat-input-area">
         <div class="input-row">
