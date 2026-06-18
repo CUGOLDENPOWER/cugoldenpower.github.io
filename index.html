@@ -215,7 +215,12 @@
         <button class="close-window-btn" onclick="togglePortal()">✕</button>
     </div>
     <div class="chat-messages-area" id="faq-messages">
-        <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>有關公司跟產品的問題都可以向我提問！</div>
+        <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>有關公司跟產品的問題都可以向我提問！<br/><br/>以下是我為您建議常用的問題：<br/>
+<a href="#" onclick="sendMessage('faq', '幫我介紹熱門產品'); return false;">
+1. 熱門商品</a>
+<a href="#" onclick="sendMessage('faq', '我想知道最新議題'); return false;">
+2. 最新議題</a><br/>
+</div>
     </div>
     <div class="chat-input-area">
         <div class="input-row">
