@@ -22,12 +22,12 @@
   border: 1px solid #e2e8f0; animation: slideUp 0.3s ease-out; 
 }
 
-/* 電腦版 */
+/* 💻 電腦版 */
 @media (min-width: 768px) {
   .portal-box { right: 25px; bottom: 100px; width: 400px; height: 600px; max-width: 90vw; max-height: 80vh; border-radius: 16px; }
 }
 
-/* 手機版滿版 */
+/* 📱 手機版滿版 */
 @media (max-width: 767px) {
   .portal-box { left: 0; right: 0; top: 0; bottom: 0; width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; border: none; }
   .user-input-field { font-size: 16px !important; }
@@ -67,7 +67,7 @@
 
 /* --- 對話區域 --- */
 .chat-messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: #f8fafc; -webkit-overflow-scrolling: touch; }
-.chat-msg { padding: 12px 16px; border-radius: 14px; max-width: 85%; word-break: break-all; font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+.chat-msg { padding: 12px 16px; border-radius: 14px; max-width: 85%; word-break: break-all; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
 .user-msg { background: #2d8a43; color: white; align-self: flex-end; border-bottom-right-radius: 2px; box-shadow: 0 2px 5px rgba(45, 138, 67, 0.2); }
 .bot-msg { background: white; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
 
@@ -91,7 +91,7 @@
 .policy-link-container a:hover { color: #64748b; }
 
 /* --- 滿意度與推薦按鈕 --- */
-.rec-btn { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 15px; margin-top: 8px; transition: 0.2s; font-weight: 500; }
+.rec-btn { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-top: 8px; transition: 0.2s; font-weight: 500; }
 .rec-btn:hover { background: #2d8a43; color: white; }
 .feedback-area { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: #64748b; padding-left: 5px; }
 .feedback-btn-yes { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
@@ -108,7 +108,7 @@
 .modal-body { padding: 24px; overflow-y: auto; font-size: 14px; line-height: 1.8; color: #334155; }
 
 /* =========================================
-   法規智庫 Markdown
+   ✨ 新增：法規智庫 Markdown 渲染樣式
    ========================================= */
 .markdown-content {
   white-space: normal !important;  /* 覆蓋 pre-wrap，讓 HTML 元素正常排版 */
@@ -161,6 +161,85 @@
   margin: 10px auto;
   box-shadow: 0 3px 10px rgba(0,0,0,0.12);
   border: 1px solid #e2e8f0;
+}
+
+/* =========================================
+   ✨ 新增：圖片點擊提示 + 燈箱樣式
+   ========================================= */
+
+/* 對話中所有圖片：指針 + 滑入微放大提示可點擊 */
+.bot-msg img {
+  cursor: zoom-in;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.bot-msg img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+}
+
+/* 燈箱遮罩 */
+#img-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;                          /* top/right/bottom/left: 0 */
+  z-index: 10000000;
+  background: rgba(0, 0, 0, 0.88);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  backdrop-filter: blur(3px);
+}
+
+/* 燈箱主圖 */
+#lightbox-img {
+  max-width: 92vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+  transform: scale(0.88);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: default;
+}
+#img-lightbox.lb-open #lightbox-img {
+  transform: scale(1);
+}
+
+/* 關閉按鈕 */
+#lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+  line-height: 1;
+}
+#lightbox-close:hover {
+  background: rgba(255,255,255,0.28);
+  transform: scale(1.12);
+}
+
+/* 底部提示文字 */
+#lightbox-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 </style>
 </head>
@@ -290,6 +369,13 @@
 </div>
 </div>
 
+<!-- ✨ 燈箱覆蓋層（點擊背景或右上角 ✕ 關閉；按 ESC 亦可關閉） -->
+<div id="img-lightbox" onclick="if(event.target===this) closeLightbox()">
+  <img id="lightbox-img" src="" alt="圖片預覽">
+  <button id="lightbox-close" onclick="closeLightbox()" title="關閉">✕</button>
+  <span id="lightbox-hint">點擊背景或按 ESC 關閉</span>
+</div>
+
 <script>
   const GAS_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzj7prm5_dCXlLjYukTn7R7IvTCfRHIqRi-iw7yyf23FHNqXZG2z5xC7uWkg8HxyMc6/exec';
   
@@ -346,7 +432,7 @@
   }
 
   // =========================================
-  // Dify Markdown 解析器
+  // ✨ 新增：Dify Markdown 解析器
   // =========================================
 
   /**
@@ -464,7 +550,7 @@
     text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
       const idx = images.length;
       images.push(
-        `<img src="${url}" alt="${alt || '圖片'}" onerror="this.style.display='none'">`
+        `<img src="${url}" alt="${alt || '圖片'}" title="點擊查看大圖" onclick="openLightbox(this.src)" onerror="this.style.display='none'">`
       );
       return `\x00IMG${idx}\x00`;
     });
@@ -540,7 +626,7 @@
       const indicatorEl = document.getElementById(typingId);
       if (indicatorEl) indicatorEl.remove();
 
-      // ── Dify 回應套用 Markdown 解析 ──
+      // ── ✨ 關鍵修改：Dify 回應套用 Markdown 解析 ──
       if (type === 'dify') {
         // 法規智庫：將 Markdown 轉為有格線表格＋顯示圖片
         appendMessage(msgContainerId, parseDifyMarkdown(data.reply), 'bot-msg markdown-content');
@@ -550,7 +636,7 @@
       }
 
       if (data.imageUrl) {
-        const imgHTML = `<img src="${data.imageUrl}" style="max-width:100%; border-radius:12px; display:block; margin-top:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
+        const imgHTML = `<img src="${data.imageUrl}" onclick="openLightbox(this.src)" title="點擊查看大圖" style="max-width:100%; border-radius:12px; display:block; margin-top:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
         appendMessage(msgContainerId, imgHTML, 'bot-msg');
       }
       
@@ -624,5 +710,41 @@
       console.error("提交滿意度回饋失敗:", error);
     }
   }
+
+  // =========================================
+  // ✨ 新增：燈箱函式
+  // =========================================
+
+  function openLightbox(src) {
+    const lb = document.getElementById('img-lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    lbImg.src = src;
+    lb.style.display = 'flex';
+    // 強制觸發 reflow 後才套用 opacity，確保 transition 正常播放
+    lb.offsetHeight;
+    lb.style.opacity = '1';
+    lb.classList.add('lb-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('img-lightbox');
+    lb.style.opacity = '0';
+    lb.classList.remove('lb-open');
+    // 等動畫結束後才隱藏
+    setTimeout(() => {
+      lb.style.display = 'none';
+      document.getElementById('lightbox-img').src = '';
+      document.body.style.overflow = '';
+    }, 220);
+  }
+
+  // ESC 鍵關閉燈箱
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const lb = document.getElementById('img-lightbox');
+      if (lb && lb.style.display === 'flex') closeLightbox();
+    }
+  });
 </script>
 </body></html>
