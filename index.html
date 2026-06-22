@@ -91,7 +91,7 @@
 .policy-link-container a:hover { color: #64748b; }
 
 /* --- 滿意度與推薦按鈕 --- */
-.rec-btn { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 14px; margin-top: 8px; transition: 0.2s; font-weight: 500; }
+.rec-btn { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 15px; margin-top: 8px; transition: 0.2s; font-weight: 500; }
 .rec-btn:hover { background: #2d8a43; color: white; }
 .feedback-area { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: #64748b; padding-left: 5px; }
 .feedback-btn-yes { background: white; color: #2d8a43; border: 1px solid #2d8a43; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
@@ -215,12 +215,15 @@
         <button class="close-window-btn" onclick="togglePortal()">✕</button>
     </div>
     <div class="chat-messages-area" id="faq-messages">
+        
+
         <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>有關公司跟產品的問題都可以向我提問！<br/><br/>以下是我為您建議常用的問題：<br/>
 <a href="#" onclick="sendMessage('faq', '幫我介紹熱門產品'); return false;">
 1. 熱門商品</a>
 <a href="#" onclick="sendMessage('faq', '我想知道最新議題'); return false;">
 2. 最新議題</a><br/>
 </div>
+
     </div>
     <div class="chat-input-area">
         <div class="input-row">
@@ -247,12 +250,14 @@
         <button class="close-window-btn" onclick="togglePortal()">✕</button>
     </div>
     <div class="chat-messages-area" id="dify-messages">
+
         <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>請輸入有關「建築物給水排水設備設計技術規範」的問題：<br/><br/>您可能想問：<br/>
 <a href="#" onclick="sendMessage('dify', '我想知道總存水彎設置應符合的規定'); return false;">
 1. 採用總存水彎是否有條件</a>
 <a href="#" onclick="sendMessage('dify', '我想知道得不設立通氣管的條件'); return false;">
 2. 什麼條件下可以不設立通氣管</a><br/>
 </div>
+
     </div>
     <div class="chat-input-area">
         <div class="input-row">
