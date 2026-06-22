@@ -163,6 +163,35 @@
   border: 1px solid #e2e8f0;
 }
 
+.faq-list {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-btn {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 12px;
+
+    background: #eef4ff;
+    border: 1px solid #d6e4ff;
+
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.faq-btn:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
 /* =========================================
    ✨ 新增：圖片點擊提示 + 燈箱樣式
    ========================================= */
@@ -297,10 +326,17 @@
         
 
         <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>有關公司跟產品的問題都可以向我提問！<br/><br/>以下是我為您建議常用的問題：<br/>
-<a href="#" onclick="sendMessage('faq', '幫我介紹熱門產品'); return false;">
-1. 熱門商品</a>
-<a href="#" onclick="sendMessage('faq', '我想知道最新議題'); return false;">
-2. 最新議題</a><br/>
+<div class="faq-list">
+
+        <a class="faq-btn"
+           href="#"
+           onclick="sendMessage('faq', '幫我介紹熱門產品'); return false;">① 熱門商品</a>
+
+        <a class="faq-btn"
+           href="#"
+           onclick="sendMessage('faq', '我想知道最新議題'); return false;">② 最新議題</a>
+
+    </div>
 </div>
 
     </div>
@@ -331,10 +367,21 @@
     <div class="chat-messages-area" id="dify-messages">
 
         <div class="chat-msg bot-msg">您好，我是智慧客服小金，很高興為您服務！<br/>請輸入有關「建築物給水排水設備設計技術規範」的問題：<br/><br/>您可能想問：<br/>
-<a href="#" onclick="sendMessage('dify', '我想知道總存水彎設置應符合的規定'); return false;">
-1. 採用總存水彎是否有條件</a>
-<a href="#" onclick="sendMessage('dify', '我想知道得不設立通氣管的條件'); return false;">
-2. 什麼條件下可以不設立通氣管</a><br/>
+<div class="faq-list">
+
+            <a class="faq-btn"
+               href="#"
+               onclick="sendMessage('dify', '我想知道總存水彎設置應符合的規定'); return false;">1️⃣ 採用總存水彎是否有條件</a>
+
+            <a class="faq-btn"
+               href="#"
+               onclick="sendMessage('dify', '我想知道得不設立通氣管的條件'); return false;">2️⃣ 什麼條件下可以不設立通氣管</a>
+
+            <a class="faq-btn"
+               href="#"
+               onclick="sendMessage('dify', '我想知道什麼是特殊排水接頭'); return false;">3️⃣ 什麼是特殊排水接頭</a>
+
+        </div>
 </div>
 
     </div>
