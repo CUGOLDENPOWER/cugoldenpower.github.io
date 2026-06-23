@@ -193,6 +193,41 @@
 }
 
 /* =========================================
+   ✨ 新增：手機左緣右滑返回
+   ========================================= */
+
+/* 手機端才啟用左邊緣提示條與滑動動畫 */
+@media (max-width: 767px) {
+
+  /* 左邊緣半透明提示條（表示此處可左滑返回） */
+  #faq-window::before,
+  #dify-window::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60px;
+    background: linear-gradient(180deg, #2d8a43, #1e3a8a);
+    border-radius: 0 4px 4px 0;
+    opacity: 0.22;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* 滑動觸發時的退場動畫 */
+  .portal-box.swipe-exit {
+    animation: swipeOutRight 0.24s cubic-bezier(0.4, 0, 0.6, 1) forwards !important;
+  }
+
+  @keyframes swipeOutRight {
+    from { transform: translateX(0);    opacity: 1;   }
+    to   { transform: translateX(100%); opacity: 0.7; }
+  }
+}
+
+/* =========================================
    ✨ 新增：圖片點擊提示 + 燈箱樣式
    ========================================= */
 
@@ -793,5 +828,66 @@
       if (lb && lb.style.display === 'flex') closeLightbox();
     }
   });
+
+  // =========================================
+  // ✨ 新增：手機左緣右滑返回（純觸控手勢，不影響官網 History）
+  // =========================================
+  (function () {
+    // 非觸控裝置直接跳過
+    if (!('ontouchstart' in window)) return;
+
+    const EDGE_LIMIT  = 30;   // 起始 X 必須在左邊緣 30px 以內才算觸發
+    const MIN_SWIPE_X = 80;   // 右移至少 80px 才算成立
+    const H_RATIO     = 1.5;  // 橫向位移需是縱向的 1.5 倍以上（避免誤觸捲動）
+
+    let startX = 0, startY = 0, isTracking = false;
+
+    /** 取得目前顯示中的對話視窗（faq 或 dify），若都沒有則回 null */
+    function getOpenChatWindow() {
+      for (const id of ['faq-window', 'dify-window']) {
+        const el = document.getElementById(id);
+        if (el && el.style.display === 'flex') return el;
+      }
+      return null;
+    }
+
+    document.addEventListener('touchstart', function (e) {
+      const win = getOpenChatWindow();
+      if (!win) { isTracking = false; return; }
+
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      // 只有從左邊緣 EDGE_LIMIT 以內開始的觸控才追蹤
+      isTracking = (startX < EDGE_LIMIT);
+    }, { passive: true });
+
+    document.addEventListener('touchend', function (e) {
+      if (!isTracking) return;
+      isTracking = false;
+
+      const win = getOpenChatWindow();
+      if (!win) return;
+
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - startX;           // 正值 = 向右
+      const dy = Math.abs(touch.clientY - startY); // 縱向絕對值
+
+      // 判斷是否符合「有效右滑」條件
+      if (dx >= MIN_SWIPE_X && dx > dy * H_RATIO) {
+        swipeBackToMenu(win);
+      }
+    }, { passive: true });
+
+    /** 播放退場動畫後再切換回選單 */
+    function swipeBackToMenu(win) {
+      win.classList.add('swipe-exit');
+      setTimeout(function () {
+        win.classList.remove('swipe-exit');
+        backToMenu();
+      }, 240); // 與 CSS animation duration 一致
+    }
+
+  })();
 </script>
 </body></html>
