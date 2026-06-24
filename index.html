@@ -678,8 +678,23 @@
 
     let currentUserId = localStorage.getItem('dify_user_id');
 
-    let currentConversationId = localStorage.getItem('dify_conversation_id'); 
-    
+    // ── 12 小時對話逾時判斷 ──
+    // 超過 12 小時沒有新訊息，下次視為全新對話（清除 conversation_id）
+    const CONVERSATION_TIMEOUT_MS = 12 * 60 * 60 * 1000;
+    const lastActivity = localStorage.getItem('dify_last_activity');
+    const isConversationExpired =
+      !lastActivity ||
+      (Date.now() - parseInt(lastActivity, 10)) > CONVERSATION_TIMEOUT_MS;
+
+    if (isConversationExpired) {
+      localStorage.removeItem('dify_conversation_id');
+      localStorage.removeItem('dify_last_activity');
+    }
+
+    let currentConversationId = isConversationExpired
+      ? null
+      : localStorage.getItem('dify_conversation_id');
+
     if (!currentUserId) {
       currentUserId = 'user-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
       localStorage.setItem('dify_user_id', currentUserId);
@@ -703,6 +718,7 @@
 
       if (data.conversationId) {
         localStorage.setItem('dify_conversation_id', data.conversationId);
+        localStorage.setItem('dify_last_activity', Date.now().toString()); // 更新最後活動時間
       }
       
       const indicatorEl = document.getElementById(typingId);
